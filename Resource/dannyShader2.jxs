@@ -1,0 +1,72 @@
+<jittershader name="fill-flat-quads">
+	<description>Default Shader </description>
+	<param name="iPosition" type="vec3" state="POSITION" />
+	<param name="iColor" type="vec4" state="COLOR" />
+	<param name="iVelocity" type="vec4" state="NORMAL" />
+	<param name="uTar" type="vec3" default ="0.0 0.0 0.0" />
+	<param name="uMaxVel" type="float" default ="0.4" />
+	<param name="uDamp" type="float" default ="0.987" />
+	<param name="uForceAmt" type="float" default ="0.002" />
+	<param name="uVol" type="float" default ="0.002" />
+	
+	<language name="glsl" version="1.5">
+	
+		<bind param="iPosition" program="vp" />
+		<bind param="iColor" program="vp" />
+		<bind param="iVelocity" program="vp" />
+		<bind param="iVol" program="vp" />
+		<bind param="uTar" program="vp" />
+		<bind param="uMaxVel" program="vp" />
+		<bind param="uDamp" program="vp" />
+		<bind param="uForceAmt" program="vp" />
+		<bind param="uVol" program="vp" />
+
+		<program name="vp" type="vertex">
+<![CDATA[
+#version 330 core
+
+uniform vec3 uTar;
+uniform float uMaxVel;
+uniform float uDamp;
+uniform float uForceAmt;
+uniform float uVol;
+
+in vec3 iPosition;
+in vec4 iColor;
+in vec3 iVelocity;
+
+out vec3 oPosition;
+out vec4 oColor;
+out vec3 oVelocity;
+
+void main() {
+	vec3 dir = uTar - iPosition;
+	vec3 normDir = normalize(dir);
+	float dist = length(dir);
+	
+	vec3 acc = normDir * uForceAmt;
+	acc /= (dist*50)*(dist*50) + 1.0 + uVol;
+	
+	oVelocity = iVelocity + acc;
+	oVelocity *= uDamp;
+	oVelocity = clamp(oVelocity, vec3(-uMaxVel), vec3(uMaxVel));
+	
+	oPosition = iPosition + oVelocity;
+	oColor = iColor;
+
+}
+]]>
+		</program>
+		<program name="fp" type="fragment">
+<![CDATA[
+#version 330 core
+
+
+out vec4 color;
+
+void main() {
+}	
+]]>
+		</program>
+	</language>
+</jittershader>
